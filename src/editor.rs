@@ -2,6 +2,10 @@ use crossterm::event::{read, Event, Event::Key, KeyCode::Char, KeyEvent, KeyModi
 mod terminal;
 use terminal::{Terminal, Size, Position};
 use std::io::Error;
+const NAME: &str = env!("CARGO_PKG_NAME");
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+
 pub struct Editor {
     should_quit: bool,
 }
@@ -58,11 +62,36 @@ impl Editor {
         let Size{height, ..} = Terminal::size()?;
         for current_row in 0..height {
             Terminal::clear_line()?;
-            Terminal::print("~")?;
+            if current_row == height /3{
+                Self::draw_welcome()?;
+            }
+            else{
+                Self::draw_empty_row()?;        
+            }
             if current_row + 1 < height {
                 Terminal::print("\r\n")?;
             }
         }
+        Ok(())
+    }
+    fn draw_welcome()-> Result<(), Error>{
+        let mut welcome_message = format!("{NAME} editor -- version {VERSION}");
+        let width  = Terminal::size()?.width as usize;
+        let len = welcome_message.len();
+        let padding = (width - len) / 2;
+        let spaces = " ".repeat(padding - 1);
+        welcome_message = format!("~{spaces}{welcome_message}");
+        welcome_message.truncate(width);
+
+
+
+        Terminal::print(&welcome_message)?;
+        Ok(())
+
+    }
+
+    fn draw_empty_row() -> Result<(), Error> {
+        Terminal::print("~")?;
         Ok(())
     }
 }
